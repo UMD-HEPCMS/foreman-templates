@@ -3,7 +3,7 @@
 kind: iPXE
 name: Kickstart default iPXE
 oses:
-- Scientific 6
+- Scientific Linux 6
 %>
 <% subnet = @host.subnet -%>
 <% if subnet.respond_to?(:dhcp_boot_mode?) && subnet.dhcp_boot_mode? -%>
