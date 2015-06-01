@@ -11,8 +11,6 @@ This template accepts the following parameters:
 - time-zone: string (default="UTC")
 - http-proxy: string (default="")
 - http-proxy-port: string (default="")
-- force-puppet: boolean (default=false)
-- enable-puppetlabs-repo: boolean (default=false)
 - ntp-server: string (default="0.fedora.pool.ntp.org")
 %>
 <%
@@ -23,7 +21,6 @@ This template accepts the following parameters:
   pm_set = @host.puppetmaster.empty? ? false : true
   proxy_uri = @host.params['http-proxy'] ? "http://#{@host.params['http-proxy']}:#{@host.params['http-proxy-port']}" : nil
   proxy_string = proxy_uri ? " --proxy=#{proxy_uri}" : ''
-  puppet_enabled = pm_set || @host.params['force-puppet'] && @host.params['force-puppet'] == 'true'
   chef_enabled = @host.respond_to?(:chef_proxy) && @host.chef_proxy
   section_end = (rhel_compatible && os_major <= 5) ? '' : '%end'
 %>
@@ -57,16 +54,12 @@ realm join --one-time-password='<%= @host.otp %>' <%= @host.realm %>
 
 <% if @host.operatingsystem.name == 'Fedora' -%>
 repo --name=fedora-everything --mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=fedora-<%= @host.operatingsystem.major %>&arch=<%= @host.architecture %><%= proxy_string %>
-<% if puppet_enabled && @host.params['enable-puppetlabs-repo'] && @host.params['enable-puppetlabs-repo'] == 'true' -%>
 repo --name=puppetlabs-products --baseurl=http://yum.puppetlabs.com/fedora/f<%= @host.operatingsystem.major %>/products/<%= @host.architecture %><%= proxy_string %>
 repo --name=puppetlabs-deps --baseurl=http://yum.puppetlabs.com/fedora/f<%= @host.operatingsystem.major %>/dependencies/<%= @host.architecture %><%= proxy_string %>
-<% end -%>
 <% elsif rhel_compatible && os_major > 4 -%>
 repo --name="EPEL" --mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-<%= @host.operatingsystem.major %>&arch=<%= @host.architecture %><%= proxy_string %>
-<% if puppet_enabled && @host.params['enable-puppetlabs-repo'] && @host.params['enable-puppetlabs-repo'] == 'true' -%>
 repo --name=puppetlabs-products --baseurl=http://yum.puppetlabs.com/el/<%= @host.operatingsystem.major %>/products/<%= @host.architecture %><%= proxy_string %>
 repo --name=puppetlabs-deps --baseurl=http://yum.puppetlabs.com/el/<%= @host.operatingsystem.major %>/dependencies/<%= @host.architecture %><%= proxy_string %>
-<% end -%>
 <% end -%>
 
 <% if @host.operatingsystem.name == 'Fedora' and os_major <= 16 -%>
@@ -98,12 +91,8 @@ redhat-lsb-core
 <% if rhel_compatible && os_major > 4 -%>
 epel-release
 <% end -%>
-<% if puppet_enabled %>
 puppet
-<% if @host.params['enable-puppetlabs-repo'] && @host.params['enable-puppetlabs-repo'] == 'true' -%>
 puppetlabs-release
-<% end -%>
-<% end -%>
 <%= section_end -%>
 
 <% if @dynamic -%>
@@ -145,7 +134,6 @@ echo 'proxy = <%= proxy_uri %>' >> /etc/yum.conf
 # update all the base packages from the updates repository
 yum -t -y -e 0 update
 
-<% if puppet_enabled %>
 echo "Configuring puppet"
 cat > /etc/puppet/puppet.conf << EOF
 <%= snippet 'puppet.conf' %>
@@ -155,7 +143,6 @@ EOF
 /sbin/chkconfig --level 345 puppet on
 
 /usr/bin/puppet agent --config /etc/puppet/puppet.conf -o --tags no_such_tag <%= @host.puppetmaster.blank? ? '' : "--server #{@host.puppetmaster}" %> --no-daemonize
-<% end -%>
 
 sync
 
