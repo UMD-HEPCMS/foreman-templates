@@ -142,10 +142,6 @@ echo "updating system time"
 /usr/sbin/ntpdate -sub <%= @host.params['ntp-server'] || '0.fedora.pool.ntp.org' %>
 /usr/sbin/hwclock --systohc
 
-<% if @host.info['parameters']['realm'] && @host.otp && @host.realm && @host.realm.realm_type == 'FreeIPA' -%>
-<%= snippet 'freeipa_register' %>
-<% end -%>
-
 <% if proxy_uri -%>
 # Yum proxy
 echo 'proxy = <%= proxy_uri %>' >> /etc/yum.conf
@@ -153,11 +149,6 @@ echo 'proxy = <%= proxy_uri %>' >> /etc/yum.conf
 
 # update all the base packages from the updates repository
 yum -t -y -e 0 update
-
-<% if chef_enabled %>
-echo "Bootstraping chef"
-<%= respond_to?(:chef_bootstrap) ? chef_bootstrap(@host) : snippet_if_exists("chef-client omnibus bootstrap") %>
-<% end%>
 
 <% if puppet_enabled %>
 echo "Configuring puppet"
@@ -169,16 +160,6 @@ EOF
 /sbin/chkconfig --level 345 puppet on
 
 /usr/bin/puppet agent --config /etc/puppet/puppet.conf -o --tags no_such_tag <%= @host.puppetmaster.blank? ? '' : "--server #{@host.puppetmaster}" %> --no-daemonize
-<% end -%>
-
-<% if salt_enabled %>
-cat > /etc/salt/minion << EOF
-<%= snippet 'saltstack_minion' %>
-EOF
-# Setup salt-minion to run on system reboot
-/sbin/chkconfig --level 345 salt-minion on
-# Running salt-call to trigger key signing
-salt-call --no-color --grains >/dev/null
 <% end -%>
 
 sync
