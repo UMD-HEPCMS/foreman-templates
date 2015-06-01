@@ -13,7 +13,6 @@ This template accepts the following parameters:
 - http-proxy-port: string (default="")
 - force-puppet: boolean (default=false)
 - enable-puppetlabs-repo: boolean (default=false)
-- salt_master: string (default=undef)
 - ntp-server: string (default="0.fedora.pool.ntp.org")
 %>
 <%
@@ -25,7 +24,6 @@ This template accepts the following parameters:
   proxy_uri = @host.params['http-proxy'] ? "http://#{@host.params['http-proxy']}:#{@host.params['http-proxy-port']}" : nil
   proxy_string = proxy_uri ? " --proxy=#{proxy_uri}" : ''
   puppet_enabled = pm_set || @host.params['force-puppet'] && @host.params['force-puppet'] == 'true'
-  salt_enabled = @host.params['salt_master'] ? true : false
   chef_enabled = @host.respond_to?(:chef_proxy) && @host.chef_proxy
   section_end = (rhel_compatible && os_major <= 5) ? '' : '%end'
 %>
@@ -105,9 +103,6 @@ puppet
 <% if @host.params['enable-puppetlabs-repo'] && @host.params['enable-puppetlabs-repo'] == 'true' -%>
 puppetlabs-release
 <% end -%>
-<% end -%>
-<% if salt_enabled %>
-salt-minion
 <% end -%>
 <%= section_end -%>
 
