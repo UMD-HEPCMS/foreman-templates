@@ -16,7 +16,6 @@ This template accepts the following parameters:
 <%
   rhel_compatible = @host.operatingsystem.family == 'Redhat' && @host.operatingsystem.name != 'Fedora'
   os_major = @host.operatingsystem.major.to_i
-  realm_compatible = (@host.operatingsystem.name == 'Fedora' && os_major >= 20) || (rhel_compatible && os_major >= 7)
   # safemode renderer does not support unary negation
   pm_set = @host.puppetmaster.empty? ? false : true
   proxy_uri = @host.params['http-proxy'] ? "http://#{@host.params['http-proxy']}:#{@host.params['http-proxy-port']}" : nil
@@ -44,31 +43,17 @@ rootpw --iscrypted <%= root_pass %>
 firewall --<%= os_major >= 6 ? 'service=' : '' %>ssh
 authconfig --useshadow --passalgo=sha256 --kickstart
 timezone --utc <%= @host.params['time-zone'] || 'UTC' %>
-<% if rhel_compatible && os_major > 4 -%>
 services --disabled gpm,sendmail,cups,pcmcia,isdn,rawdevices,hpoj,bluetooth,openibd,avahi-daemon,avahi-dnsconfd,hidd,hplip,pcscd
-<% end -%>
 
-<% if realm_compatible && @host.info['parameters']['realm'] && @host.otp && @host.realm && @host.realm.realm_type == 'Active Directory' -%>
+<% if @host.info['parameters']['realm'] && @host.otp && @host.realm && @host.realm.realm_type == 'Active Directory' -%>
 realm join --one-time-password='<%= @host.otp %>' <%= @host.realm %>
 <% end -%>
 
-<% if @host.operatingsystem.name == 'Fedora' -%>
-repo --name=fedora-everything --mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=fedora-<%= @host.operatingsystem.major %>&arch=<%= @host.architecture %><%= proxy_string %>
-repo --name=puppetlabs-products --baseurl=http://yum.puppetlabs.com/fedora/f<%= @host.operatingsystem.major %>/products/<%= @host.architecture %><%= proxy_string %>
-repo --name=puppetlabs-deps --baseurl=http://yum.puppetlabs.com/fedora/f<%= @host.operatingsystem.major %>/dependencies/<%= @host.architecture %><%= proxy_string %>
-<% elsif rhel_compatible && os_major > 4 -%>
 repo --name="EPEL" --mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-<%= @host.operatingsystem.major %>&arch=<%= @host.architecture %><%= proxy_string %>
 repo --name=puppetlabs-products --baseurl=http://yum.puppetlabs.com/el/<%= @host.operatingsystem.major %>/products/<%= @host.architecture %><%= proxy_string %>
 repo --name=puppetlabs-deps --baseurl=http://yum.puppetlabs.com/el/<%= @host.operatingsystem.major %>/dependencies/<%= @host.architecture %><%= proxy_string %>
-<% end -%>
 
-<% if @host.operatingsystem.name == 'Fedora' and os_major <= 16 -%>
-# Bootloader exception for Fedora 16:
-bootloader --append="nofb quiet splash=quiet <%=ks_console%>" <%= grub_pass %>
-part biosboot --fstype=biosboot --size=1
-<% else -%>
 bootloader --location=mbr --append="nofb quiet splash=quiet" <%= grub_pass %>
-<% end -%>
 
 <% if @dynamic -%>
 %include /tmp/diskpart.cfg
@@ -88,9 +73,7 @@ wget
 <% if os_major >= 6 -%>
 redhat-lsb-core
 <% end -%>
-<% if rhel_compatible && os_major > 4 -%>
 epel-release
-<% end -%>
 puppet
 puppetlabs-release
 <%= section_end -%>
