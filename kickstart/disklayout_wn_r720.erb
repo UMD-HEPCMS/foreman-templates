@@ -1,0 +1,25 @@
+<%#
+kind: ptable
+name: 00 UMD WN R720 - hadoop - no format
+oses:
+- Scientific Linux 6
+%>
+clearpart --none
+part None --fstype=vfat --label="DellUtility" --onpart=sda1 --noformat
+part / --fstype=ext4 --onpart=sda2
+part /scratch --fstype=ext4 --onpart=sda3
+part swap --onpart=sda5 --noformat
+part /var --fstype=ext4 --onpart=sda6
+part /tmp --fstype=ext4 --onpart=sda7
+part /hadoop1 --fstype=ext4 --label="/hadoop1" --onpart=sdb1 --noformat
+part /hadoop2 --fstype=ext4 --label="/hadoop2" --onpart=sdc1 --noformat
+part /hadoop3 --fstype=ext4 --label="/hadoop3" --onpart=sdd1 --noformat
+part /hadoop4 --fstype=ext4 --label="/hadoop4" --onpart=sde1 --noformat
+part /hadoop5 --fstype=ext4 --label="/hadoop5" --onpart=sdf1 --noformat
+part /hadoop6 --fstype=ext4 --label="/hadoop6" --onpart=sdg1 --noformat
+part /hadoop7 --fstype=ext4 --label="/hadoop7" --onpart=sdh1 --noformat
+part /hadoop8 --fstype=ext4 --label="/hadoop8" --onpart=sdi1 --noformat
+part /hadoop9 --fstype=ext4 --label="/hadoop9" --onpart=sdj1 --noformat
+part /hadoop10 --fstype=ext4 --label="/hadoop10" --onpart=sdk1 --noformat
+part /hadoop11 --fstype=ext4 --label="/hadoop11" --onpart=sdl1 --noformat
+part /hadoop12 --fstype=ext4 --label="/hadoop12" --onpart=sdm1 --noformat
