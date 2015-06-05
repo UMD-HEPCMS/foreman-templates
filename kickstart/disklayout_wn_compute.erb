@@ -1,0 +1,15 @@
+<%#
+kind: ptable
+name: 00 UMD WN R720 - hadoop - no format
+oses:
+- Scientific Linux 6
+%>
+clearpart --none
+part None --fstype=vfat --label="DellUtility" --onpart=sda1 --noformat
+part / --fstype=ext4 --onpart=sda1
+part /scratch --fstype=ext4 --onpart=sda5
+part swap --onpart=sda2 --noformat
+part /var --fstype=ext4 --onpart=sda6
+part /tmp --fstype=ext4 --onpart=sda3
+part /hadoop1 --fstype=ext4 --label="/hadoop1" --onpart=sda7 --noformat
+part /hadoop2 --fstype=ext4 --label="/hadoop2" --onpart=sdb1 --noformat
