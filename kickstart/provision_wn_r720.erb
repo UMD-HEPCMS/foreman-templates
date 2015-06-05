@@ -58,7 +58,7 @@ bootloader --location=mbr --append="nofb quiet splash=quiet" <%= grub_pass %>
 <% if @dynamic -%>
 %include /tmp/diskpart.cfg
 <% else -%>
-<%= @host.diskLayout_wn_r720 %>
+<%= @host.diskLayout %>
 <% end -%>
 
 text
@@ -80,7 +80,7 @@ puppetlabs-release
 
 <% if @dynamic -%>
 %pre
-<%= @host.diskLayout_wn_r720 %>
+<%= @host.diskLayout %>
 <%= section_end -%>
 <% end -%>
 
